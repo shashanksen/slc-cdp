@@ -1,0 +1,92 @@
+{
+  "client_id": "cdp-slc",
+  "env": "dev",
+  "cloud": "aws",
+  "region": "eu-west-1",
+  "network": {
+    "topology": "hub_spoke",
+    "hub": {
+      "name": "hub",
+      "cidr": "10.0.0.0/16",
+      "subnets": [
+        {
+          "name": "hub-public-a",
+          "cidr": "10.0.10.0/24",
+          "tier": "public",
+          "az": "a"
+        }
+      ]
+    },
+    "spokes": [
+      {
+        "name": "migration",
+        "cidr": "10.1.0.0/16",
+        "subnets": [
+          {
+            "name": "migration-private-a",
+            "cidr": "10.1.20.0/24",
+            "tier": "private",
+            "az": "a"
+          }
+        ]
+      }
+    ],
+    "connectivity": {
+      "type": "peering"
+    }
+  },
+  "security": {
+    "flow_logs": true,
+    "firewall_policy": {
+      "hub_ingress_from_internet": {
+        "enabled": true,
+        "allowed_port": 443,
+        "allowed_cidrs": [
+          "0.0.0.0/24"
+        ]
+      },
+      "spoke_to_hub_only": true,
+      "spoke_egress_restriction": {
+        "mode": "deny_internet_direct"
+      }
+    }
+  },
+  "storage": {
+    "s3_buckets": [
+      {
+        "name": "cdp-slc-dev-staging",
+        "purpose": "staging",
+        "encryption": "sse_s3",
+        "versioning": true,
+        "block_public_access": true
+      }
+    ]
+  },
+  "iam": {
+    "roles": [
+      {
+        "name": "migration-app-role",
+        "assumed_by": "ec2",
+        "policies": [
+          "s3_readwrite"
+        ]
+      }
+    ]
+  },
+  "platform": {
+    "orchestration": [
+      "workflow"
+    ],
+    "data_processing": [
+      "object_storage"
+    ],
+    "observability": [
+      "logs",
+      "metrics"
+    ]
+  },
+  "tags": {
+    "Owner": "CDP",
+    "CostCenter": "platform"
+  }
+}
